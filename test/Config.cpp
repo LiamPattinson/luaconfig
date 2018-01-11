@@ -36,6 +36,13 @@ int main(void)
         std::cout << e.what() << std::endl;
     }
 
+    // Test default get
+    {
+        auto x = cfg.get<double>("not_a_variable",17);
+        std::cout << x << std::endl;
+    }
+
+
     // Now, put SFINAE bits through their paces
     // (compile time tests only)
     // floats

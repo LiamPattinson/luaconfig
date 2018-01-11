@@ -79,6 +79,7 @@ class Config
     // ====================================================
     // Lookup and return Lua variable
 
+    // throwing version
     template< class T>
     T get( const char* key){
         return read<T,Scope>(_L,key);
@@ -87,6 +88,12 @@ class Config
     template<class T>
     T get( const std::string& key){
         return get<T>(key.c_str());
+    }
+
+    // non-throwing version with default
+    template< class T>
+    T get( const char* key, T def){
+        return read<T,Scope>(_L,key,def);
     }
 
     // ====================================================

@@ -285,11 +285,19 @@ auto type_test( lua_State* L, K key)
 // ============================================================================
 // Get from Lua to stack, type check, get from stack to C++
 
+// throwing version
 template< class T, class Scope, class K>
 T read( lua_State* L, K key){
     lua_to_stack<Scope>(L,key);
     type_test<T>(L,key);
     return stack_to_cpp<T>(L);
+}
+
+// non-throwing version with default
+template< class T, class Scope, class K>
+T read( lua_State* L, K key, T def){ 
+    lua_to_stack<Scope>(L,key);
+    return (is_type<T>(L)) ? stack_to_cpp<T>(L) : def;
 }
 
 // ============================================================================

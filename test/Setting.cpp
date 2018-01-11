@@ -22,6 +22,9 @@ int main(void){
         std::cout << r << std::endl;
         std::cout << g << std::endl;
         std::cout << b << std::endl;
+        // defaulted get
+        auto x = col.get<double>("x",13);
+        std::cout << x << std::endl;
     }
 
     // Get a more varied Setting
