@@ -1,0 +1,18 @@
+# TODO
+
+- Introduce "dot notation".
+    - For example, 'cfg.get<double>("table.var_name")'
+    - As an extension, allow integer indexing too: 'cfg.get<double>("table.[3].var_name")'
+    - Lookup should avoid creating nested Settings for performance reasons.
+
+- Have Setting keep track of its path
+    - If it was created at global scope, should contain: 'std::string _path = GLOBAL.table_name'
+    - For nested Setting: 'std::string _path = GLOBAL.table_name.nested_name'
+
+- TypeMismatchException should report full path of Setting/Config it was thrown from
+
+- Create object 'Function'
+    - Similarly to Setting, will control a lua_State on a new thread
+    - At top of its stack, will keep Lua function
+
+- Better unit testing
