@@ -192,6 +192,56 @@ auto stack_to_cpp( lua_State* L)
 // ============================================================================
 // Type checking on the stack
 
+// Non-throwing -- return bool if type matches
+
+// is_type<T>
+
+// float
+template<class T>
+auto is_type( lua_State* L)
+    -> typename std::enable_if< std::is_floating_point<T>::value, bool>::type
+{
+    return lua_isnumber(L,-1);
+}
+
+// int
+template< class T>
+auto is_type( lua_State* L)
+    -> typename std::enable_if< std::is_integral<T>::value && !std::is_same<T,bool>::value, bool>::type
+{
+   return lua_isinteger(L,-1);
+}
+
+// boolean
+template< class T>
+auto is_type( lua_State* L)
+    -> typename std::enable_if< std::is_same<T,bool>::value, bool>::type
+{
+   return lua_isboolean(L,-1);
+}
+
+template< class T>
+auto is_type( lua_State* L)
+    -> typename std::enable_if< std::is_same<T,std::string>::value || std::is_same<T,const char*>::value, bool>::type
+{
+    return lua_isstring(L,-1);
+}
+
+// table
+template< class T>
+auto is_type( lua_State* L)
+    -> typename std::enable_if< std::is_same<T,Setting>::value, bool>::type
+{
+    return lua_istable(L,-1);
+}
+
+// nil
+bool is_nil( lua_State* L){
+    return lua_isnoneornil(L,-1);
+}
+
+// Throwing -- throw a custom exception if not matched
+
 // float
 template< class T, class K>
 auto type_test( lua_State* L, K key)
@@ -219,14 +269,7 @@ auto type_test( lua_State* L, K key)
 // string
 template< class T, class K>
 auto type_test( lua_State* L, K key)
-    -> typename std::enable_if< std::is_same<T,std::string>::value, void>::type
-{
-   if( !lua_isstring(L,-1)) throw TypeMismatchException(key,"string",luaL_typename(L,-1));
-}
-
-template< class T, class K>
-auto type_test( lua_State* L, K key)
-    -> typename std::enable_if< std::is_same<T,const char*>::value, void>::type
+    -> typename std::enable_if< std::is_same<T,std::string>::value || std::is_same<T,const char*>::value, void>::type
 {
    if( !lua_isstring(L,-1)) throw TypeMismatchException(key,"string",luaL_typename(L,-1));
 }
