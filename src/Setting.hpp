@@ -16,11 +16,14 @@
 #define __LUACONFIG_SETTING_HPP
 
 #include "core.hpp"
+#include "utils.hpp"
 
 namespace luaconfig {
 
 class Setting
 {
+    friend Config;
+
     private:
 
     lua_State* _L;
@@ -129,6 +132,23 @@ class Setting
     int len(){
         lua_len(_L,-1);
         return stack_to_cpp<int>(_L);
+    }
+
+    // ====================================================
+    // Lookup table and use to reconfigure an existing Setting
+    // This allows the reuse of a sub-Setting without having
+    // to rebuild a Lua State each time.
+
+    void refocus( Setting& other, const char* key){
+        luaconfig::refocus<Setting,Scope>( _L, other._L, key);
+    }
+
+    void refocus( Setting& other, const std::string& key){
+        luaconfig::refocus<Setting,Scope>( _L, other._L, key.c_str());
+    }
+
+    void refocus( Setting& other, int index){
+        luaconfig::refocus<Setting,Scope>( _L, other._L, index);
     }
 
 };

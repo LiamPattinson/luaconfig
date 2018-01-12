@@ -19,6 +19,7 @@ extern "C" {
 #include <tuple>
 
 #include "core.hpp"
+#include "utils.hpp"
 #include "Setting.hpp"
 
 namespace luaconfig {
@@ -107,6 +108,19 @@ class Config
     template<class T>
     void set( const std::string& key, T value){
         set( key.c_str(), value);
+    }
+
+    // ====================================================
+    // Lookup table and use to reconfigure an existing Setting
+    // This allows the reuse of a sub-Setting without having
+    // to rebuild a Lua State each time.
+    //
+    void refocus( Setting& other, const char* key){
+        luaconfig::refocus<Setting,Scope>( _L, other._L, key);
+    }
+
+    void refocus( Setting& other, const std::string& key){
+        luaconfig::refocus<Setting,Scope>( _L, other._L, key.c_str());
     }
 
 };

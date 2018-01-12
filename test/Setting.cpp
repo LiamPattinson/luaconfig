@@ -73,5 +73,19 @@ int main(void){
         }
     }
 
+    // Refocusing
+    {
+        luaconfig::Setting tab = cfg.get<luaconfig::Setting>("table");
+        luaconfig::Setting sub = tab.get<luaconfig::Setting>("table");
+        auto s1 = sub.get<std::string>("string");
+        std::cout << "Before refocus: " << s1 << std::endl;
+        tab.refocus(sub,"other_table");
+        auto s2 = sub.get<std::string>("string");
+        std::cout << "After refocus: " << s2 << std::endl;
+
+
+
+    }   
+
     return EXIT_SUCCESS;
 }

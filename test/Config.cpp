@@ -75,5 +75,15 @@ int main(void)
     // Make Setting (no tests of whether Settings actually work)
     {luaconfig::Setting col = cfg.get<luaconfig::Setting>("color");}
 
+    // Refocus setting
+    {
+        luaconfig::Setting set = cfg.get<luaconfig::Setting>("color");
+        auto r = set.get<double>("r");
+        std::cout << "Before refocus:" << r << std::endl;
+        cfg.refocus( set, "array");
+        auto x = set.get<double>(1);
+        std::cout << "After refocus:" << x << std::endl;
+    }
+
     return EXIT_SUCCESS;
 }

@@ -19,6 +19,9 @@ table = {
     table = {
         string = "nested",
     },
+    other_table = {
+        string = "other nested",
+    },
 }
 
 function f(a,b)
