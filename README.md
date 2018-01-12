@@ -77,6 +77,27 @@ for( int i=1; i <= array.len(); ++i){
 }
 ```
 
+### The Function class
+
+A Lua function may be encapsulated in a `Function` object. This is templated over both the return type and the arguments it takes. As an example, if we have the following simple Lua function:
+
+```
+function f(a,b)
+    return a..b
+end
+```
+
+(Where the `..` operator means 'concatenate'). As an unusual application of this in C++, we may try to append an integer to a C-string and convert to a `std::string`:
+
+```
+auto f = cfg.get<luaconfig::Function<std::string,const char*,int>>("f");
+auto x = f("string",64);    // Gives std::string{"string64"}
+```
+
+In this case, `Function` was templated over three types: the first determined the return type, while the next two determined the the types of the first and second function arguments respectively.
+
+## Other Features
+
 ### Dot notation
 
 A lookup can be performed through multiple levels of nested tables using 'dot notation'. This avoids the creation of new `Setting` objects for each nested table, so offers significant performance benefits. For example, in the fairly contrived example of:
@@ -138,10 +159,6 @@ for( int i=1; i<=mat.len(); ++i){
     std::cout << std::endl;
 }
 ```
-
-## Upcoming Features
-
-* `Function` class that allows simplified access to Lua functions from C++
 
 ## Licensing
 

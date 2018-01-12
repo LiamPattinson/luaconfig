@@ -20,6 +20,7 @@ namespace luaconfig {
 
 class Config;
 class Setting;
+class FunctionBase {}; // FunctionBase used as a stand-in for templated Function class. Use std::is_base_of to test.
 
 // Scoping policy classes
 
@@ -219,10 +220,10 @@ auto stack_to_cpp( lua_State* L)
 
 }
 
-// table (Setting)
+// table (Setting) or function (Function), does not throw
 template<class T>
 auto stack_to_cpp( lua_State* L)
-    -> typename std::enable_if< std::is_same<T,luaconfig::Setting>::value, T>::type
+    -> typename std::enable_if< std::is_same<T,Setting>::value || std::is_base_of<FunctionBase,T>::value, T>::type
 {
     // Create new thread
     lua_State* p_thread;
@@ -231,8 +232,7 @@ auto stack_to_cpp( lua_State* L)
     // Move table from top of stack to new thread
     lua_xmove(L,p_thread,1);
     // Build and return new Setting    
-    return Setting(p_thread,thread_id);;
-
+    return T(p_thread,thread_id);
 }
 
 // ============================================================================
@@ -281,6 +281,14 @@ auto is_type( lua_State* L)
     return lua_istable(L,-1);
 }
 
+// function
+template<class T>
+auto is_type( lua_State* L)
+    -> typename std::enable_if< std::is_base_of<FunctionBase,T>::value, bool>::type
+{
+    return lua_isfunction(L,-1);
+}
+
 // nil
 bool is_nil( lua_State* L){
     return lua_isnoneornil(L,-1);
@@ -326,6 +334,14 @@ auto type_test( lua_State* L, K key)
     -> typename std::enable_if< std::is_same<T,Setting>::value, void>::type
 {
    if( !lua_istable(L,-1)) throw TypeMismatchException(key,"table (as luaconfig Setting)",luaL_typename(L,-1));
+}
+
+// function
+template< class T, class K>
+auto type_test( lua_State* L, K key)
+    -> typename std::enable_if< std::is_base_of<FunctionBase,T>::value, void>::type
+{
+   if( !lua_isfunction(L,-1)) throw TypeMismatchException(key,"function (as luaconfig Function)",luaL_typename(L,-1));
 }
 
 // ============================================================================

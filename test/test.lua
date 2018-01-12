@@ -33,9 +33,14 @@ matrix = {
     { 7.0 , 8.0 , 9.0 },
 }
 
-function f(a,b)
-    return (a * math.sin(b))
+function f(a)
+    return a
 end
 
+function g(a,b)
+    return a+b
+end
 
-
+function h(a,b)
+    return a..b
+end

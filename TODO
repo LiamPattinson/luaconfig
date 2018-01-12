@@ -6,8 +6,6 @@
 
 - TypeMismatchException should report full path of Setting/Config it was thrown from
 
-- Create object 'Function'
-    - Similarly to Setting, will control a lua_State on a new thread
-    - At top of its stack, will keep Lua function
-
 - Better unit testing
+
+- Multiple return types for Function
