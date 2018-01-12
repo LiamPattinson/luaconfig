@@ -44,3 +44,7 @@ end
 function h(a,b)
     return a..b
 end
+
+function m(a)
+    return a,a+1,a+2
+end

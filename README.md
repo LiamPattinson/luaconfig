@@ -96,6 +96,19 @@ auto x = f("string",64);    // Gives std::string{"string64"}
 
 In this case, `Function` was templated over three types: the first determined the return type, while the next two determined the the types of the first and second function arguments respectively.
 
+`Function` is also capable of returning multiple types via `std::tuple`:
+
+```
+-- Lua
+function f(a)
+    return a, a+1, a+2
+end
+
+// C++
+auto f = cfg.get<luaconfig::Function<std::tuple<int,int,int>,int>>("f");
+auto x = f(1); // Gives std::tuple<int,int,int>{1,2,3}
+```
+
 ## Other Features
 
 ### Dot notation

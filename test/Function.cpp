@@ -18,8 +18,8 @@ int main(void)
         std::cout << "Testing function f(a)=a, a=12" << std::endl;
         auto f = cfg.get<luaconfig::Function<double,double>>("f");
         std::cout << f(12) << std::endl;
-        std::cout << "Retesting function for reentry, a=12" << std::endl;
-        std::cout << f(12) << std::endl;
+        std::cout << "Retesting function for reentry, a=16" << std::endl;
+        std::cout << f(16) << std::endl;
     }
 
 
@@ -38,6 +38,17 @@ int main(void)
         auto h = cfg.get<luaconfig::Function<std::string,const char*,int>>("h");
         auto x = h("string",64);
         std::cout << x << std::endl;
+    }
+
+    // multiple return
+    {
+        std::cout << "Testing multiple return m(a)=(a,a+1,a+2), a=3" << std::endl;
+        auto m = cfg.get<luaconfig::Function<std::tuple<int,int,int>,int>>("m");
+        auto x = m(3);
+        std::cout << std::get<0>(x) << ", " << std::get<1>(x) << ", " << std::get<2>(x) << std::endl;
+        std::cout << "Retesting function for reentry, a=15" << std::endl;
+        auto y = m(15);
+        std::cout << std::get<0>(y) << ", " << std::get<1>(y) << ", " << std::get<2>(y) << std::endl;
     }
 
 
