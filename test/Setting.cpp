@@ -82,10 +82,22 @@ int main(void){
         tab.refocus(sub,"other_table");
         auto s2 = sub.get<std::string>("string");
         std::cout << "After refocus: " << s2 << std::endl;
-
-
-
     }   
+
+    // Refocusing to read a matrix
+    {
+        auto mat = cfg.get<luaconfig::Setting>("matrix");
+        auto row = mat.get<luaconfig::Setting>(1);
+        for( int i=1; i<=mat.len(); ++i){
+            if( i != 1 ) mat.refocus(row,i);
+            for( int j=1; j<=row.len(); ++j){
+                auto x = row.get<double>(j);
+                std::cout << x << ' ';
+            }
+            std::cout << std::endl;
+        }
+
+    }
 
     return EXIT_SUCCESS;
 }

@@ -85,6 +85,33 @@ For both `Config` and `Setting` objects, it is possible to provide a default val
 auto x = cfg.get<int>("x",0);
 ```
 
+### Refocusing
+
+When creating a new `Setting`, a new Lua thread is spawned with a table at the top of its virtual stack. The lifetime of this thread is determined by the lifetime of the `Setting`. To avoid the performance penalty of repeatedly building and destroying new threads, it is possible to reuse a `Setting` by 'refocusing'. For example, if reading the following matrix:
+
+```
+matrix = {
+    { 1.0 , 2.0 , 3.0 },
+    { 4.0 , 5.0 , 6.0 },
+    { 7.0 , 8.0 , 9.0 },
+}
+```
+
+An efficient way to read it may be:
+
+```
+auto mat = cfg.get<luaconfig::Setting>("matrix");
+auto row = mat.get<luaconfig::Setting>(1);
+for( int i=1; i<=mat.len(); ++i){
+    if( i != 1 ) mat.refocus(row,i);
+    for( int j=1; j<=row.len(); ++j){
+        auto x = row.get<double>(j);
+        std::cout << x << ' ';
+    }
+    std::cout << std::endl;
+}
+```
+
 ## Upcoming Features
 
 * `Function` class that allows simplified access to Lua functions from C++
