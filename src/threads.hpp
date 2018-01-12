@@ -23,32 +23,36 @@ const char* thread_pool = "luaconfigthreadpool";
 
 // create new thread, place in registry, return pointer to lua_State and id
 std::pair<lua_State*,int> new_thread( lua_State* L){
-    // Side notes follow stack. R=Registry, T=ThreadTable, k=key, l=len, t=thread
+    // Side notes follow stack. R=Registry, T=ThreadTable, k=key, t=thread
     // Lookup thread table
-    lua_pushstring(L,thread_pool);                                                 // +1, [k], add key to stack
-    lua_gettable(L,LUA_REGISTRYINDEX);                                             // +1, [T], pop string, push T = R[k]
+    lua_pushstring(L,thread_pool);                       // +1, [k], add key to stack
+    lua_gettable(L,LUA_REGISTRYINDEX);                   // +1, [T], pop string, push T = R[k]
     // If not found, create
     if( !lua_istable(L,-1) ){
-        lua_pop(L,1);                                                              // +0, [],  pop whatever was found
-        lua_pushstring(L,thread_pool);                                             // +1, [k], push key
-        lua_newtable(L);                                                           // +2, [k,T], push new table
-        lua_settable(L,LUA_REGISTRYINDEX);                                         // +0, [], set R[k] = T, pop k and T
-        lua_pushstring(L,thread_pool);                                             // +1, [k], add key to stack
-        lua_gettable(L,LUA_REGISTRYINDEX);                                         // +1, [T], pop string, push T = R[k]
+        lua_pop(L,1);                                    // +0, [],  pop whatever was found
+        lua_pushstring(L,thread_pool);                   // +1, [k], push key
+        lua_newtable(L);                                 // +2, [k,T], push new table
+        lua_settable(L,LUA_REGISTRYINDEX);               // +0, [], set R[k] = T, pop k and T
+        lua_pushstring(L,thread_pool);                   // +1, [k], add key to stack
+        lua_gettable(L,LUA_REGISTRYINDEX);               // +1, [T], pop string, push T = R[k]
     }
-    // With thread table on top of stack, find length
-    lua_len(L,-1);                                                                 // +2, [T,l], push len(T)
-    // Add one to get thread pool index
-    lua_pushnumber(L,1);                                                           // +3, [T,l,1], push 1
-    lua_arith(L,LUA_OPADD);                                                        // +2, [T,l+1], add last two on stack
-    int id = lua_tonumber(L,-1);
+    // With thread table on top of stack, find first nil
+    int id=1;
+    while(true){
+        lua_pushnumber(L,id);                            // +2, [T,id], push id
+        lua_gettable(L,-2);                              // +2, [T,v], with v = T[id]
+        bool is_nil = lua_isnil(L,-1);                   // +2, [T,v]
+        lua_pop(L,1);                                    // +1, [T], pop v
+        if( is_nil ) break; else ++id;
+    }
+    lua_pushnumber(L,id);                                // +2, [T,id], push id
     // Create new thread, create pointer
-    lua_newthread(L);                                                              // +3, [T,l+1,t], new thread
-    lua_State* p_thread = lua_tothread(L,-1);                                      // +3, [T,l+1,t]
+    lua_newthread(L);                                    // +3, [T,id,t], new thread
+    lua_State* p_thread = lua_tothread(L,-1);            // +3, [T,id,t]
     // Add thread to thread pool
-    lua_settable(L,-3);                                                            // +1, [T], set T[l+1] = t
+    lua_settable(L,-3);                                  // +1, [T], set T[id] = t
     // Clean up
-    lua_pop(L,1);                                                                  // +0, [], pop thread table
+    lua_pop(L,1);                                        // +0, [], pop thread table
     // Return pointer to new thread and associated id
     return std::make_pair(p_thread,id);
 }
