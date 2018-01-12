@@ -11,6 +11,7 @@
 
 #include <type_traits>
 #include <tuple> // std::tie
+#include <cstring>
 
 namespace luaconfig {
 
@@ -26,32 +27,69 @@ class Table {};
 
 // ============================================================================
 // Get Lua variable to top of stack
+// Returns number of stack objects at end of lookup
+
+// Simple lookup of single item: no dot notation
 
 // global
 // Key can only be const char *. Compiler should complain about anything else.
 template< class Scope, class Key>
-auto lua_to_stack( lua_State* L, Key key)
-    -> typename std::enable_if< std::is_same<Scope,Global>::value, void>::type
+auto lua_to_stack_single( lua_State* L, Key key)
+    -> typename std::enable_if< std::is_same<Scope,Global>::value, int>::type
 {
-   lua_getglobal(L,key);
+    lua_getglobal(L,key);
+    return 1;
 } 
 
 // table
 // Key can be either const char* or an integer
 template< class Scope, class Key>
-auto lua_to_stack( lua_State* L, Key key)
-    -> typename std::enable_if< std::is_same<Scope,Table>::value && std::is_same<Key,const char*>::value, void>::type
+auto lua_to_stack_single( lua_State* L, Key key)
+    -> typename std::enable_if< std::is_same<Scope,Table>::value && std::is_same<Key,const char*>::value, int>::type
 {
     lua_pushstring(L,key);
     lua_gettable(L,-2);
+    return 1;
+} 
+
+template< class Scope, class Key>
+auto lua_to_stack_single( lua_State* L, Key key)
+    -> typename std::enable_if< std::is_same<Scope,Table>::value && std::is_integral<Key>::value, int>::type
+{
+    lua_geti(L,-1,key);
+    return 1;
+} 
+
+// Dot-notation lookup
+// Note that this is currently incompatible with integer index lookups
+
+const char* dot_delim = "."; // delimiter string: any compatible chars go here
+
+template< class Scope, class Key>
+auto lua_to_stack( lua_State* L, Key key)
+    -> typename std::enable_if< !std::is_integral<Key>::value, int>::type
+{
+    // Need non-const char* for strtok
+    char* keydup = strdup(key);
+    // Get first token
+    char* tk = strtok(keydup,dot_delim);
+    const char* tkc = tk;
+    // Perform lookup
+    int n_stack = lua_to_stack_single<Scope>(L,tkc);
+    // Other tokens? Note that all further lookups must occur at table scope.
+    while( (tk = strtok(nullptr,dot_delim)) != nullptr ){
+        const char* tkc = tk;
+        n_stack += lua_to_stack_single<Table>(L,tkc);
+    }
+    return n_stack;
 } 
 
 template< class Scope, class Key>
 auto lua_to_stack( lua_State* L, Key key)
-    -> typename std::enable_if< std::is_same<Scope,Table>::value && std::is_integral<Key>::value, void>::type
+    -> typename std::enable_if< std::is_same<Scope,Table>::value && std::is_integral<Key>::value, int>::type
 {
-    lua_pushnumber(L,key);
-    lua_gettable(L,-2);
+    int stack =  lua_to_stack_single<Scope>(L,key);
+    return stack;
 } 
 
 // ============================================================================
@@ -130,7 +168,8 @@ auto cpp_to_stack( lua_State* L, const T& value)
 }
 
 // ============================================================================
-// Get variable from stack to C++
+// Get variable from stack to C++, pop from stack
+// Note that this does not pop the value off the stack!
 
 // float
 template< class T>
@@ -288,16 +327,26 @@ auto type_test( lua_State* L, K key)
 // throwing version
 template< class T, class Scope, class K>
 T read( lua_State* L, K key){
-    lua_to_stack<Scope>(L,key);
+    int stack_size = lua_to_stack<Scope>(L,key);
     type_test<T>(L,key);
-    return stack_to_cpp<T>(L);
+    T result = stack_to_cpp<T>(L);
+    lua_pop(L,stack_size-1);
+    return result;
 }
 
 // non-throwing version with default
 template< class T, class Scope, class K>
 T read( lua_State* L, K key, T def){ 
-    lua_to_stack<Scope>(L,key);
-    return (is_type<T>(L)) ? stack_to_cpp<T>(L) : def;
+    int stack_size = lua_to_stack<Scope>(L,key);
+    T result;
+    if ( is_type<T>(L) ){
+        result = stack_to_cpp<T>(L);
+        lua_pop(L,stack_size-1);
+    } else {
+        result = def;
+        lua_pop(L,stack_size);
+    }
+    return result;
 }
 
 // ============================================================================

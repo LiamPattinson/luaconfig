@@ -61,11 +61,13 @@ int main(void){
     // Read Setting of an array
     // Remember, Lua counts from 1 to length inclusive!
     {
-        luaconfig::Setting arr = cfg.get<luaconfig::Setting>("array");
+        auto arr = cfg.get<luaconfig::Setting>("array");
+        std::cout << "Begin read from array" << std::endl;
         for( int i=1; i<= arr.len(); ++i){
             auto x = arr.get<double>(i);
             std::cout << x << std::endl;
         }
+        std::cout << "Begin write to array" << std::endl;
         for( int i=1; i<= arr.len(); ++i){
             arr.set(i,2*arr.get<double>(i));
             auto x = arr.get<double>(i);
@@ -75,8 +77,8 @@ int main(void){
 
     // Refocusing
     {
-        luaconfig::Setting tab = cfg.get<luaconfig::Setting>("table");
-        luaconfig::Setting sub = tab.get<luaconfig::Setting>("table");
+        auto tab = cfg.get<luaconfig::Setting>("table");
+        auto sub = tab.get<luaconfig::Setting>("table");
         auto s1 = sub.get<std::string>("string");
         std::cout << "Before refocus: " << s1 << std::endl;
         tab.refocus(sub,"other_table");
@@ -97,6 +99,16 @@ int main(void){
             std::cout << std::endl;
         }
 
+    }
+
+    // Dot notation
+    {
+        auto tab = cfg.get<luaconfig::Setting>("table");
+        auto x = tab.get<std::string>("table.string");
+        auto y = tab.get<std::string>("table.table.string");
+        std::cout << "testing dot notation" << std::endl;
+        std::cout << x << std::endl;
+        std::cout << y << std::endl;
     }
 
     return EXIT_SUCCESS;

@@ -77,6 +77,22 @@ for( int i=1; i <= array.len(); ++i){
 }
 ```
 
+### Dot notation
+
+A lookup can be performed through multiple levels of nested tables using 'dot notation'. For example, in the contrived example:
+
+```
+table = { x = { y = { z = { str = "Hello world!" }}}}
+```
+
+One can lookup the inner string directly from global scope:
+
+```
+auto str = cfg.get<std::string>("table.x.y.z.str");
+```
+
+This avoids the creation of new `Setting` objects for each nested table, so offers significant performance benefits.
+
 ### Default values
 
 For both `Config` and `Setting` objects, it is possible to provide a default value when calling `get`. This will be selected if the requested variable doesn't exist or is an unexpected type. This feature is best used to access optional fields in your configuration files. If a default value is not provided and a lookup fails, `get` will throw a `TypeMismatchException` (where a match to 'nil' usually means a variable doesn't exist).
@@ -115,7 +131,6 @@ for( int i=1; i<=mat.len(); ++i){
 ## Upcoming Features
 
 * `Function` class that allows simplified access to Lua functions from C++
-* "Dot notation" lookup, such as `cfg.get<int>("path.to.var")`
 
 ## Licensing
 

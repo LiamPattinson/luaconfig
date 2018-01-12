@@ -77,12 +77,22 @@ int main(void)
 
     // Refocus setting
     {
-        luaconfig::Setting set = cfg.get<luaconfig::Setting>("color");
+        auto set = cfg.get<luaconfig::Setting>("color");
         auto r = set.get<double>("r");
         std::cout << "Before refocus:" << r << std::endl;
         cfg.refocus( set, "array");
         auto x = set.get<double>(1);
         std::cout << "After refocus:" << x << std::endl;
+    }
+
+    // Dot notation
+    {
+        auto x = cfg.get<double>("color.r");
+        auto y = cfg.get<std::string>("table.string");
+        auto z = cfg.get<std::string>("table.table.string");
+        std::cout << x << std::endl;
+        std::cout << y << std::endl;
+        std::cout << z << std::endl;
     }
 
     return EXIT_SUCCESS;

@@ -9,7 +9,7 @@ s = "I am a string"
 i = 44
 
 color = { r=0.5, g=0.7, b=0 }
-array = { 0.1, 0.2, 0.3 }
+array = { 0.1, 0.2, 0.3, 0.4 }
 
 table = {
     float = 0.2,
@@ -18,6 +18,9 @@ table = {
     bool = true,
     table = {
         string = "nested",
+        table = {
+            string = "very nested",
+        },
     },
     other_table = {
         string = "other nested",
