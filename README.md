@@ -79,7 +79,7 @@ for( int i=1; i <= array.len(); ++i){
 
 ### Dot notation
 
-A lookup can be performed through multiple levels of nested tables using 'dot notation'. For example, in the contrived example:
+A lookup can be performed through multiple levels of nested tables using 'dot notation'. This avoids the creation of new `Setting` objects for each nested table, so offers significant performance benefits. For example, in the fairly contrived example of:
 
 ```
 table = { x = { y = { z = { str = "Hello world!" }}}}
@@ -91,7 +91,18 @@ One can lookup the inner string directly from global scope:
 auto str = cfg.get<std::string>("table.x.y.z.str");
 ```
 
-This avoids the creation of new `Setting` objects for each nested table, so offers significant performance benefits.
+It is also possible to use integer indexing. For a configuration of:
+
+```
+x = { {y=1}, {z=2} }
+```
+
+Each of `y` and `z` may be accessed via:
+
+```
+auto y = cfg.get<double>("x.1.y");
+auto z = cfg.get<double>("x.2.z");
+```
 
 ### Default values
 

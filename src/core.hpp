@@ -9,9 +9,10 @@
 #include "exceptions.hpp"
 #include "threads.hpp" // also includes Lua libraries
 
+#include <cstdlib>
+#include <cstring>
 #include <type_traits>
 #include <tuple> // std::tie
-#include <cstring>
 
 namespace luaconfig {
 
@@ -61,9 +62,9 @@ auto lua_to_stack_single( lua_State* L, Key key)
 } 
 
 // Dot-notation lookup
-// Note that this is currently incompatible with integer index lookups
 
 const char* dot_delim = "."; // delimiter string: any compatible chars go here
+const char* nums = "0123456789";
 
 template< class Scope, class Key>
 auto lua_to_stack( lua_State* L, Key key)
@@ -79,17 +80,23 @@ auto lua_to_stack( lua_State* L, Key key)
     // Other tokens? Note that all further lookups must occur at table scope.
     while( (tk = strtok(nullptr,dot_delim)) != nullptr ){
         const char* tkc = tk;
-        n_stack += lua_to_stack_single<Table>(L,tkc);
+        // index lookup, or text key?
+        char first = tkc[0];
+        if( strchr(nums,first) != nullptr ){ // is the first character numeric?
+            int index = atoi(tkc);
+            n_stack += lua_to_stack_single<Table>(L,index);
+        } else {
+            n_stack += lua_to_stack_single<Table>(L,tkc);
+        }
     }
     return n_stack;
 } 
 
 template< class Scope, class Key>
 auto lua_to_stack( lua_State* L, Key key)
-    -> typename std::enable_if< std::is_same<Scope,Table>::value && std::is_integral<Key>::value, int>::type
+    -> typename std::enable_if< std::is_integral<Key>::value && std::is_same<Scope,Table>::value, int>::type
 {
-    int stack =  lua_to_stack_single<Scope>(L,key);
-    return stack;
+    return lua_to_stack_single<Scope>(L,key);
 } 
 
 // ============================================================================

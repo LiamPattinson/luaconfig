@@ -95,5 +95,17 @@ int main(void)
         std::cout << z << std::endl;
     }
 
+    // Integer indexed dot notation
+    {
+        auto x = cfg.get<double>("array.1");
+        auto y = cfg.get<double>("array.2");
+        auto z = cfg.get<double>("array.3");
+        std::cout << x << std::endl;
+        std::cout << y << std::endl;
+        std::cout << z << std::endl;
+        auto m = cfg.get<double>("matrix.2.2");
+        std::cout << m << std::endl;
+    }
+
     return EXIT_SUCCESS;
 }
