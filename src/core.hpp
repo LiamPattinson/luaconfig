@@ -20,7 +20,7 @@ namespace luaconfig {
 
 class Config;
 class Setting;
-class FunctionBase {}; // FunctionBase used as a stand-in for templated Function class. Use std::is_base_of to test.
+class FunctionBase; // FunctionBase used as a stand-in for templated Function class. Use std::is_base_of to test.
 
 // Scoping policy classes
 

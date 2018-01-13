@@ -13,10 +13,10 @@
 
 namespace luaconfig {
 
-// FunctionImpl definition
+// FunctionBase definition
 // Defines boring things like constructors etc.
 
-class FunctionImpl : FunctionBase
+class FunctionBase
 {
     protected:
 
@@ -28,9 +28,9 @@ class FunctionImpl : FunctionBase
     // ====================================================
     // Constructor and Destructor
 
-    FunctionImpl( lua_State* p_thread, int thread_id) : _L(p_thread), _thread_id(thread_id) {}
+    FunctionBase( lua_State* p_thread, int thread_id) : _L(p_thread), _thread_id(thread_id) {}
 
-    ~FunctionImpl(){
+    ~FunctionBase(){
         if( _L != nullptr ){
             // Remove function from stack
             lua_pop(_L,1);
@@ -43,21 +43,21 @@ class FunctionImpl : FunctionBase
     // Copy constructor, assignment operator
     // Both are deleted, as a Function object has unique control over the lifetime of a lua_State*.
 
-    FunctionImpl( const FunctionImpl& ) = delete;
-    FunctionImpl& operator=( const FunctionImpl& ) = delete;
+    FunctionBase( const FunctionBase& ) = delete;
+    FunctionBase& operator=( const FunctionBase& ) = delete;
 
     // ====================================================
     // Move constructor / move assignment
     // Both will invalidate the original Function object.
 
-    FunctionImpl( FunctionImpl&& other) :
+    FunctionBase( FunctionBase&& other) :
         _L(other._L),
         _thread_id(other._thread_id)
     {
         other._L = nullptr;
     }
 
-    FunctionImpl& operator=( FunctionImpl&& other){
+    FunctionBase& operator=( FunctionBase&& other){
         _L = other._L;
         _thread_id = other._thread_id;
         other._L = nullptr;
@@ -69,11 +69,11 @@ class FunctionImpl : FunctionBase
 // Single return type
 
 template< class RType, class... Args>
-class Function : FunctionImpl
+class Function : FunctionBase
 {
     public:
 
-    using FunctionImpl::FunctionImpl;
+    using FunctionBase::FunctionBase;
 
     // ====================================================
     // Call function
@@ -137,11 +137,11 @@ std::tuple<T...> tuple_from_stack( lua_State* L){
 // Multiple return type
 
 template< class... Args, class... RTypes>
-class Function<std::tuple<RTypes...>,Args...> : FunctionImpl
+class Function<std::tuple<RTypes...>,Args...> : FunctionBase
 {
     public:
 
-    using FunctionImpl::FunctionImpl;
+    using FunctionBase::FunctionBase;
 
     // ====================================================
     // Call function
@@ -158,8 +158,8 @@ class Function<std::tuple<RTypes...>,Args...> : FunctionImpl
         // Extract results and return
         return tuple_from_stack<RTypes...>(_L);;
     };
-    
 };
+
 
 } // end namespace
 #endif
