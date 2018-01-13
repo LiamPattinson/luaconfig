@@ -90,11 +90,9 @@ end
 (Where the `..` operator means 'concatenate'). As an unusual application of this in C++, we may try to append an integer to a C-string and convert to a `std::string`:
 
 ```
-auto f = cfg.get<luaconfig::Function<std::string,const char*,int>>("f");
+auto f = cfg.get< luaconfig::Function< std::string (const char*,int) >>("f");
 auto x = f("string",64);    // Gives std::string{"string64"}
 ```
-
-In this case, `Function` was templated over three types: the first determined the return type, while the next two determined the the types of the first and second function arguments respectively.
 
 `Function` is also capable of returning multiple types via `std::tuple`:
 
@@ -105,7 +103,7 @@ function f(a)
 end
 
 // C++
-auto f = cfg.get<luaconfig::Function<std::tuple<int,int,int>,int>>("f");
+auto f = cfg.get<luaconfig::Function< std::tuple<int,int,int>(int)>>("f");
 auto x = f(1); // Gives std::tuple<int,int,int>{1,2,3}
 ```
 

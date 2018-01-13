@@ -16,7 +16,7 @@ int main(void)
     // Read functions
     {
         std::cout << "Testing function f(a)=a, a=12" << std::endl;
-        auto f = cfg.get<luaconfig::Function<double,double>>("f");
+        auto f = cfg.get<luaconfig::Function<double(double)>>("f");
         std::cout << f(12) << std::endl;
         std::cout << "Retesting function for reentry, a=16" << std::endl;
         std::cout << f(16) << std::endl;
@@ -26,7 +26,7 @@ int main(void)
     // More complicated functions
     {
         std::cout << "Testing function g(a,b)=a+b, a=3, b=5.5" << std::endl;
-        auto g = cfg.get<luaconfig::Function<double,double,double>>("g");
+        auto g = cfg.get<luaconfig::Function<double(double,double)>>("g");
         std::cout << g(3,5.5) << std::endl;
         std::cout << "Retesting function for reentry, a=36.2, b=4" << std::endl;
         std::cout << g(36.2,4) << std::endl;
@@ -35,7 +35,7 @@ int main(void)
     // concat
     {
         std::cout << "Testing function h(a,b)=a..b, a=\"string\", b=64" << std::endl;
-        auto h = cfg.get<luaconfig::Function<std::string,const char*,int>>("h");
+        auto h = cfg.get<luaconfig::Function<std::string(const char*,int)>>("h");
         auto x = h("string",64);
         std::cout << x << std::endl;
     }
@@ -43,7 +43,7 @@ int main(void)
     // multiple return
     {
         std::cout << "Testing multiple return m(a)=(a,a+1,a+2), a=3" << std::endl;
-        auto m = cfg.get<luaconfig::Function<std::tuple<int,int,int>,int>>("m");
+        auto m = cfg.get<luaconfig::Function<std::tuple<int,int,int>(int)>>("m");
         auto x = m(3);
         std::cout << std::get<0>(x) << ", " << std::get<1>(x) << ", " << std::get<2>(x) << std::endl;
         std::cout << "Retesting function for reentry, a=15" << std::endl;

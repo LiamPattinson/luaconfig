@@ -66,10 +66,15 @@ class FunctionBase
 };
 
 // Function class definition
+
+// General Declaration
+template< class Func >
+class Function; // undefined
+
 // Single return type
 
 template< class RType, class... Args>
-class Function : FunctionBase
+class Function< RType(Args...) > : FunctionBase
 {
     public:
 
@@ -137,7 +142,7 @@ std::tuple<T...> tuple_from_stack( lua_State* L){
 // Multiple return type
 
 template< class... Args, class... RTypes>
-class Function<std::tuple<RTypes...>,Args...> : FunctionBase
+class Function<std::tuple<RTypes...>(Args...)> : FunctionBase
 {
     public:
 
@@ -159,7 +164,6 @@ class Function<std::tuple<RTypes...>,Args...> : FunctionBase
         return tuple_from_stack<RTypes...>(_L);;
     };
 };
-
 
 } // end namespace
 #endif
