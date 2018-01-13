@@ -7,5 +7,3 @@
 - TypeMismatchException should report full path of Setting/Config it was thrown from
 
 - Better unit testing
-
-- Multiple return types for Function
