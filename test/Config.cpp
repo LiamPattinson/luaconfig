@@ -107,5 +107,15 @@ int main(void)
         std::cout << m << std::endl;
     }
 
+    // exists
+    {
+        bool x = cfg.exists("array");
+        bool y = cfg.exists("array.1");
+        bool z = cfg.exists("qwerty");
+        std::cout << std::boolalpha << x << std::endl;
+        std::cout << std::boolalpha << y << std::endl;
+        std::cout << std::boolalpha << z << std::endl;
+    }
+
     return EXIT_SUCCESS;
 }

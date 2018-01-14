@@ -345,6 +345,17 @@ auto type_test( lua_State* L, K key)
 }
 
 // ============================================================================
+// Test existance of a variable
+
+template< class Scope, class K>
+bool exists( lua_State* L, K key){
+    int stack_size = lua_to_stack<Scope>(L,key);
+    bool result = !is_nil(L);
+    lua_pop(L,stack_size);
+    return result;
+}
+
+// ============================================================================
 // Get from Lua to stack, type check, get from stack to C++
 
 // throwing version

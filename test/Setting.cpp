@@ -111,5 +111,17 @@ int main(void){
         std::cout << y << std::endl;
     }
 
+    // exists
+    {
+        auto tab = cfg.get<luaconfig::Setting>("table");
+        bool x = tab.exists("table.string");
+        bool y = tab.exists("table.table.string");
+        bool z = tab.exists("table.string");
+        std::cout << std::boolalpha << x << std::endl;
+        std::cout << std::boolalpha << y << std::endl;
+        std::cout << std::boolalpha << z << std::endl;
+
+    }
+
     return EXIT_SUCCESS;
 }

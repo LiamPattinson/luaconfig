@@ -108,6 +108,21 @@ class Setting
     }
 
     // ====================================================
+    // Test existance of Lua variable
+
+    bool exists( const char* key){
+        return luaconfig::exists<Scope>(_L,key);
+    }
+
+    bool exists( const std::string& key){
+        return exists(key.c_str());
+    }
+
+    bool exists( int index){
+        return luaconfig::exists<Scope>(_L,index);
+    }
+
+    // ====================================================
     // Set a new Lua variable 
 
     template<class T>

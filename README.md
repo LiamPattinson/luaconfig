@@ -144,6 +144,14 @@ For both `Config` and `Setting` objects, it is possible to provide a default val
 auto x = cfg.get<int>("x",0);
 ```
 
+### Existance Testing
+
+Sometimes, we may not be interested in the details of a given setting, but instead are only concerned whether it exists or not. For that, we may use the member function `exists` with either `Config` or `Setting`.
+
+```
+bool x1 = cfg.exists("path.to.setting.x.1");
+```
+
 ### Refocusing
 
 When creating a new `Setting`, a new Lua thread is spawned with a table at the top of its virtual stack. The lifetime of this thread is determined by the lifetime of the `Setting`. To avoid the performance penalty of repeatedly building and destroying new threads, it is possible to reuse a `Setting` by 'refocusing'. For example, if reading the following matrix:
