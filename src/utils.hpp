@@ -5,23 +5,34 @@
 #ifndef __LUACONFIG_UTILS_HPP
 #define __LUACONFIG_UTILS_HPP
 
-#include "core.hpp"
+#include <tuple>
+#include <functional>
 
 namespace luaconfig {
 
-// Look up something on State1, use it to overwrite top of State2 stack
-// Allows reuse of Setting and Function objects without rebuilding a Lua State
-template<class T, class Scope, class K>
-void refocus( lua_State* from, lua_State* to, K key){
-        // drop top of 'to'
-        lua_pop(to,1);
-        // get new T
-        lua_to_stack<Scope>(from,key);
-        type_test<T>(from,key);
-        // transfer
-        lua_xmove( from, to, 1);
-}
+// Is type T a std::tuple?
+template<class T>
+struct is_tuple {
+    static const bool value = false;
+};
 
+template<class... Args>
+struct is_tuple<std::tuple<Args...>> {
+    static const bool value = true;
+};
+
+// Is type T a std::function?
+// Additionally provide function signature.
+template<class T>
+struct is_function {
+    static const bool value = false;
+};
+
+template<class Arg>
+struct is_function<std::function<Arg>> {
+    static const bool value = true;
+    using sig = Arg;
+};
 
 } // end namespace
 #endif

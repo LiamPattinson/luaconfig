@@ -54,6 +54,9 @@ New variables may be written to Lua's global scope in the following way:
 cfg.set("x",6);
 ```
 
+The lifetime of a Lua State depends uniquely on its encapsulating `Config` class. Copying is not permitted, but they may be moved.
+
+
 ### The Setting class
 
 Tables are accessible using the class `Setting`. These provide similar get/set functions as `Config`, though they provide lookup relative to a table rather than global scope and also allow integer indexing. For example, if we modify our Lua script to include the following:
@@ -76,6 +79,8 @@ for( int i=1; i <= array.len(); ++i){
     std::cout << array.get<int>(i) << std::endl;
 }
 ```
+
+Unlike `Config`, the `Setting` class is copyable. However, as copying a `Setting` will spawn a new Lua thread and duplicate the stack, this will inflict a significant performance penalty as opposed to moving or passing references.
 
 ### The Function class
 
@@ -106,6 +111,15 @@ end
 auto f = cfg.get<luaconfig::Function< std::tuple<int,int,int>(int)>>("f");
 auto x = f(1); // Gives std::tuple<int,int,int>{1,2,3}
 ```
+
+If the user wishes, they may use `std::function` instead of `luaconfig::Function`:
+
+```
+auto f = cfg.get<std::function< std::tuple<int,int,int>(int)>>("f");
+```
+
+Internally, this will create a new `luaconfig::Function`, copy it into a `std::function` wrapper, and dispose of the original `luaconfig::Function`. Since this can be a fairly costly procedure, the direct use of `luaconfig::Function` is recommended unless you require the additional capabilities of a `std::function`.
+
 
 ## Other Features
 

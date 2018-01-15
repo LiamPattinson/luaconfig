@@ -14,6 +14,7 @@ extern "C" {
 }
 
 #include "exceptions.hpp"
+#include <tuple>
 #include <utility>
 
 namespace luaconfig {
@@ -55,6 +56,21 @@ std::pair<lua_State*,int> new_thread( lua_State* L){
     lua_pop(L,1);                                        // +0, [], pop thread table
     // Return pointer to new thread and associated id
     return std::make_pair(p_thread,id);
+}
+
+// Create new thread with same stack
+std::pair<lua_State*,int> copy_thread( lua_State* L){
+    // Get new thread
+    lua_State* p_new; int id;
+    std::tie(p_new,id) = new_thread(L);
+    // Copy things over
+    int stack_size = lua_gettop(L);
+    lua_pushnil(L);
+    for( int i=1; i<=stack_size; ++i){
+        lua_copy(L,i,-1);
+        lua_xmove(L,p_new,1);
+    }
+    return std::make_pair(p_new,id);
 }
 
 // kill a thread by setting its value to nil

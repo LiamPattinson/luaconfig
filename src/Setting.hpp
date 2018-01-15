@@ -51,8 +51,21 @@ class Setting
     // Copy constructor, assignment operator
     // Both are deleted, as a Setting object has unique control over the lifetime of a lua_State*.
 
-    Setting( const Setting& ) = delete;
-    Setting& operator=( const Setting& ) = delete;
+    Setting( const Setting& other){
+        std::tie(_L,_thread_id) = copy_thread(other._L);
+    }
+
+    Setting& operator=( const Setting& other){
+        // Delete current thread
+        if( _L != nullptr ){
+            // Remove table from stack
+            lua_pop(_L,1);
+            // Delete thread
+            kill_thread(_L,_thread_id);
+        }
+        // Copy
+        std::tie(_L,_thread_id) = copy_thread(other._L);
+    }
 
     // ====================================================
     // Move constructor / move assignment

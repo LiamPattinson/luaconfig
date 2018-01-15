@@ -8,11 +8,13 @@
 
 #include "exceptions.hpp"
 #include "threads.hpp" // also includes Lua libraries
+#include "utils.hpp"
 
 #include <cstdlib>
 #include <cstring>
 #include <type_traits>
 #include <tuple> // std::tie
+#include <functional>
 
 namespace luaconfig {
 
@@ -20,7 +22,8 @@ namespace luaconfig {
 
 class Config;
 class Setting;
-class FunctionBase; // FunctionBase used as a stand-in for templated Function class. Use std::is_base_of to test.
+class FunctionBase; // Use std::base_of to test for Function
+template<class T> class Function;
 
 // Scoping policy classes
 
@@ -220,7 +223,7 @@ auto stack_to_cpp( lua_State* L)
 
 }
 
-// table (Setting) or function (Function), does not throw
+// table (Setting) or function (Function), does not throw.
 template<class T>
 auto stack_to_cpp( lua_State* L)
     -> typename std::enable_if< std::is_same<T,Setting>::value || std::is_base_of<FunctionBase,T>::value, T>::type
@@ -233,6 +236,16 @@ auto stack_to_cpp( lua_State* L)
     lua_xmove(L,p_thread,1);
     // Build and return new Setting    
     return T(p_thread,thread_id);
+}
+
+// function (std::function), does not throw
+template<class T>
+auto stack_to_cpp( lua_State* L)
+    -> typename std::enable_if< is_function<T>::value, T>::type
+{
+    using sig = typename is_function<T>::sig;
+    T func( std::move(stack_to_cpp<luaconfig::Function<sig>>(L)));
+    return func;
 }
 
 // ============================================================================
@@ -284,7 +297,7 @@ auto is_type( lua_State* L)
 // function
 template<class T>
 auto is_type( lua_State* L)
-    -> typename std::enable_if< std::is_base_of<FunctionBase,T>::value, bool>::type
+    -> typename std::enable_if< std::is_base_of<FunctionBase,T>::value || std::is_function<T>::value, bool>::type
 {
     return lua_isfunction(L,-1);
 }
@@ -344,6 +357,13 @@ auto type_test( lua_State* L, K key)
    if( !lua_isfunction(L,-1)) throw TypeMismatchException(key,"function (as luaconfig Function)",luaL_typename(L,-1));
 }
 
+template< class T, class K>
+auto type_test( lua_State* L, K key)
+    -> typename std::enable_if< is_function<T>::value, void>::type
+{
+   if( !lua_isfunction(L,-1)) throw TypeMismatchException(key,"function (as std::function)",luaL_typename(L,-1));
+}
+
 // ============================================================================
 // Test existance of a variable
 
@@ -392,6 +412,50 @@ void write( lua_State* L, K key, T t){
     type_test<T>( L, key);
     stack_to_lua<Scope>( L, key);
 }
+
+// ============================================================================
+// Look up something on State_1, use it to overwrite top of State_2 stack
+// Allows reuse of Setting and Function objects without rebuilding a Lua State
+
+template<class T, class Scope, class K>
+void refocus( lua_State* from, lua_State* to, K key){
+        // drop top of 'to'
+        lua_pop(to,1);
+        // get new T
+        lua_to_stack<Scope>(from,key);
+        type_test<T>(from,key);
+        // transfer
+        lua_xmove( from, to, 1);
+}
+
+// ============================================================================
+// Populate a tuple from the Lua stack
+
+template<class...T>
+struct TupleFromStackImpl;
+
+
+template< class Head, class... Tail>
+struct TupleFromStackImpl<Head,Tail...>{
+    static std::tuple<Head,Tail...> get( lua_State* L){
+        auto result = stack_to_cpp<Head>(L);
+        return std::tuple_cat( TupleFromStackImpl<Tail...>::get(L), std::make_tuple(result));
+    }
+};
+
+template<class Tail>
+struct TupleFromStackImpl<Tail>{
+    static std::tuple<Tail> get(lua_State* L){
+        auto result = stack_to_cpp<Tail>(L);
+        return std::make_tuple(result);
+    }
+};
+
+template<class...T>
+std::tuple<T...> tuple_from_stack( lua_State* L){
+    return TupleFromStackImpl<T...>::get(L);
+}
+
 
 } // end namespace
 #endif

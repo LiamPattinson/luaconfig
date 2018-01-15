@@ -43,8 +43,21 @@ class FunctionBase
     // Copy constructor, assignment operator
     // Both are deleted, as a Function object has unique control over the lifetime of a lua_State*.
 
-    FunctionBase( const FunctionBase& ) = delete;
-    FunctionBase& operator=( const FunctionBase& ) = delete;
+    FunctionBase( const FunctionBase& other){
+        std::tie(_L,_thread_id) = copy_thread(other._L);
+    }
+
+    FunctionBase& operator=( const FunctionBase& other){
+        // Delete current thread
+        if( _L != nullptr ){
+            // Remove table from stack
+            lua_pop(_L,1);
+            // Delete thread
+            kill_thread(_L,_thread_id);
+        }
+        // Copy
+        std::tie(_L,_thread_id) = copy_thread(other._L);
+    }
 
     // ====================================================
     // Move constructor / move assignment
@@ -97,48 +110,6 @@ class Function< RType(Args...) > : FunctionBase
     }
 };
 
-// An interlude of Tuple magic...
-
-// Is type T a Tuple?
-template<class T>
-struct is_tuple {
-    static const bool value = false;
-};
-
-template<class... Args>
-struct is_tuple<std::tuple<Args...>> {
-    static const bool value = true;
-};
-
-// Populate a tuple from the Lua stack
-
-template<class...T>
-struct TupleFromStackImpl;
-
-
-template< class Head, class... Tail>
-struct TupleFromStackImpl<Head,Tail...>{
-    static std::tuple<Head,Tail...> get( lua_State* L){
-        auto result = stack_to_cpp<Head>(L);
-        return std::tuple_cat( TupleFromStackImpl<Tail...>::get(L), std::make_tuple(result));
-    }
-};
-
-template<class Tail>
-struct TupleFromStackImpl<Tail>{
-    static std::tuple<Tail> get(lua_State* L){
-        auto result = stack_to_cpp<Tail>(L);
-        return std::make_tuple(result);
-    }
-};
-
-template<class...T>
-std::tuple<T...> tuple_from_stack( lua_State* L){
-    return TupleFromStackImpl<T...>::get(L);
-}
-
-
-// Function class definition
 // Multiple return type
 
 template< class... Args, class... RTypes>

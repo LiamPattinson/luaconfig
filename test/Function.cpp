@@ -51,6 +51,13 @@ int main(void)
         std::cout << std::get<0>(y) << ", " << std::get<1>(y) << ", " << std::get<2>(y) << std::endl;
     }
 
+    // std::function
+    {
+        std::cout << "Testing std::function, return m(a)=(a,a+1,a+2), a=1" << std::endl;
+        auto m = cfg.get<std::function<std::tuple<int,int,int>(int)>>("m");
+        auto x = m(1);
+        std::cout << std::get<0>(x) << ", " << std::get<1>(x) << ", " << std::get<2>(x) << std::endl;
+    }
 
     return EXIT_SUCCESS;
 }
