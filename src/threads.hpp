@@ -20,10 +20,10 @@ extern "C" {
 namespace luaconfig {
 
 // Name of thread pool
-const char* thread_pool = "luaconfigthreadpool";
+static const char* thread_pool = "luaconfigthreadpool";
 
 // create new thread, place in registry, return pointer to lua_State and id
-std::pair<lua_State*,int> new_thread( lua_State* L){
+inline std::pair<lua_State*,int> new_thread( lua_State* L){
     // Side notes follow stack. R=Registry, T=ThreadTable, k=key, t=thread
     // Lookup thread table
     lua_pushstring(L,thread_pool);                       // +1, [k], add key to stack
@@ -59,7 +59,7 @@ std::pair<lua_State*,int> new_thread( lua_State* L){
 }
 
 // Create new thread with same stack
-std::pair<lua_State*,int> copy_thread( lua_State* L){
+inline std::pair<lua_State*,int> copy_thread( lua_State* L){
     // Get new thread
     lua_State* p_new; int id;
     std::tie(p_new,id) = new_thread(L);
@@ -74,7 +74,7 @@ std::pair<lua_State*,int> copy_thread( lua_State* L){
 }
 
 // kill a thread by setting its value to nil
-void kill_thread( lua_State* L, int thread_id){
+inline void kill_thread( lua_State* L, int thread_id){
     // assume thread pool already exists
     lua_pushstring(L,thread_pool);
     lua_gettable(L,LUA_REGISTRYINDEX);

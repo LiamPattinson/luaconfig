@@ -67,8 +67,8 @@ auto lua_to_stack_single( lua_State* L, Key key)
 
 // Dot-notation lookup
 
-const char* dot_delim = "."; // delimiter string: any compatible chars go here
-const char* nums = "0123456789";
+static const char* dot_delim = "."; // delimiter string: any compatible chars go here
+static const char* nums = "0123456789";
 
 template< class Scope, class Key>
 auto lua_to_stack( lua_State* L, Key key)
@@ -303,7 +303,7 @@ auto is_type( lua_State* L)
 }
 
 // nil
-bool is_nil( lua_State* L){
+inline bool is_nil( lua_State* L){
     return lua_isnoneornil(L,-1);
 }
 
