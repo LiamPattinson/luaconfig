@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <array>
 
 int main(void)
 {
@@ -115,6 +117,17 @@ int main(void)
         std::cout << std::boolalpha << x << std::endl;
         std::cout << std::boolalpha << y << std::endl;
         std::cout << std::boolalpha << z << std::endl;
+    }
+
+    // iterables
+    {
+        std::array<double,2> arr;
+        cfg.get( "array", arr.begin(), arr.end());
+        for( auto&& x : arr) std::cout << x << std::endl;       
+
+        std::vector<double> vec(cfg.len("array"));
+        cfg.get( "array", vec.begin(), vec.end());
+        for( auto&& x : vec) std::cout << x << std::endl;       
     }
 
     return EXIT_SUCCESS;

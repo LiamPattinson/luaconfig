@@ -121,6 +121,25 @@ class Setting
     }
 
     // ====================================================
+    // Write to iterable
+
+    // iterable version
+    template< class itype>
+    void get( const char* key, itype it, itype end){
+        read<itype,Scope>(_L,key,it,end);
+    }
+
+    template< class itype>
+    void get( const std::string& key, itype it, itype end){
+        get(key.c_str(),it,end);
+    }
+
+    template< class itype>
+    void get( int key, itype it, itype end){
+        read<itype,Scope>(_L,key,it,end);
+    }
+
+    // ====================================================
     // Test existance of Lua variable
 
     bool exists( const char* key){
@@ -157,9 +176,25 @@ class Setting
     // Get length of table
     // Reminder: Lua indexing goes from 1 to len, not 0 to len-1!
     
-    int len(){
+    std::size_t len(){
         lua_len(_L,-1);
-        return stack_to_cpp<int>(_L);
+        return stack_to_cpp<std::size_t>(_L);
+    }
+
+    // ====================================================
+    // Get length of object within table
+    // Reminder: Lua indexing goes from 1 to len, not 0 to len-1!
+
+    std::size_t len( const char* key){
+        return luaconfig::len<Scope>(_L,key);
+    }
+
+    std::size_t len( const std::string& key){
+        return len(key.c_str());
+    }
+
+    std::size_t len( int key){
+        return luaconfig::len<Scope>(_L,key);
     }
 
     // ====================================================

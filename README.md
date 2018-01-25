@@ -120,7 +120,6 @@ auto f = cfg.get<std::function< std::tuple<int,int,int>(int)>>("f");
 
 Internally, this will create a new `luaconfig::Function`, copy it into a `std::function` wrapper, and dispose of the original `luaconfig::Function`. Since this can be a fairly costly procedure, the direct use of `luaconfig::Function` is recommended unless you require the additional capabilities of a `std::function`.
 
-
 ## Other Features
 
 ### Dot notation
@@ -166,9 +165,9 @@ Sometimes, we may not be interested in the details of a given setting, but inste
 bool x1 = cfg.exists("path.to.setting.x.1");
 ```
 
-### Refocusing
+### Reading to Iterables
 
-When creating a new `Setting`, a new Lua thread is spawned with a table at the top of its virtual stack. The lifetime of this thread is determined by the lifetime of the `Setting`. To avoid the performance penalty of repeatedly building and destroying new threads, it is possible to reuse a `Setting` by 'refocusing'. For example, if reading the following matrix:
+A table containing homogeneous types may be efficiently read into C++ using iterator methods. For example, if we wish to read and print the following matrix:
 
 ```
 matrix = {
@@ -178,7 +177,22 @@ matrix = {
 }
 ```
 
-An efficient way to read it may be:
+This may be performed with: 
+
+```
+auto mat = cfg.get<luaconfig::Setting>("matrix");
+std::vector<double> v( mat.len(1) ); // mat.len(1) gets number of columns
+for( int i=1; i<=mat.len(); ++i){    // mat.len() gets number of rows
+    mat.get( i, v.begin(), v.end()); // Reads row i into v
+    for(auto&& x : v) std::cout << x << ' '; // Print v
+    std::cout << '\n';
+}
+```
+
+
+### Refocusing
+
+When creating a new `Setting`, a new Lua thread is spawned with a table at the top of its virtual stack. The lifetime of this thread is determined by the lifetime of the `Setting`. To avoid the performance penalty of repeatedly building and destroying new threads, it is possible to reuse a `Setting` by 'refocusing'. Going back to our matrix example, an alternative way to read it may be:
 
 ```
 auto mat = cfg.get<luaconfig::Setting>("matrix");
@@ -189,9 +203,11 @@ for( int i=1; i<=mat.len(); ++i){
         auto x = row.get<double>(j);
         std::cout << x << ' ';
     }
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 ```
+
+In this case, it would be more efficient to use iterator methods, but refocusing will still work in cases where nested tables do not contain homogenous types (i.e. a mixture of numbers and strings).
 
 ## Licensing
 

@@ -97,6 +97,25 @@ class Config
         return read<T,Scope>(_L,key,def);
     }
 
+    template< class T>
+    T get( const std::string& key, T def){
+        return get<T>(key.c_str(),def);
+    }
+
+    // ====================================================
+    // Write to iterable
+
+    // iterable version
+    template< class itype>
+    void get( const char* key, itype it, itype end){
+        read<itype,Scope>(_L,key,it,end);
+    }
+
+    template< class itype>
+    void get( const std::string& key, itype it, itype end){
+        get(key.c_str(),it,end);
+    }
+
     // ====================================================
     // Test existance of Lua variable
 
@@ -106,6 +125,17 @@ class Config
 
     bool exists( const std::string& key){
         return exists(key.c_str());
+    }
+
+    // ====================================================
+    // Get size of Lua variable
+
+    std::size_t len( const char* key){
+        return luaconfig::len<Scope>(_L,key);
+    }
+
+    std::size_t len( const std::string& key){
+        return len(key.c_str());
     }
 
     // ====================================================

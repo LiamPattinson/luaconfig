@@ -223,7 +223,7 @@ auto stack_to_cpp( lua_State* L)
 
 }
 
-// table (Setting) or function (Function), does not throw.
+// table (Setting) or function (Function)
 template<class T>
 auto stack_to_cpp( lua_State* L)
     -> typename std::enable_if< std::is_same<T,Setting>::value || std::is_base_of<FunctionBase,T>::value, T>::type
@@ -238,7 +238,7 @@ auto stack_to_cpp( lua_State* L)
     return T(p_thread,thread_id);
 }
 
-// function (std::function), does not throw
+// function (std::function)
 template<class T>
 auto stack_to_cpp( lua_State* L)
     -> typename std::enable_if< is_function<T>::value, T>::type
@@ -401,6 +401,33 @@ T read( lua_State* L, K key, T def){
         lua_pop(L,stack_size);
     }
     return result;
+}
+
+// iterable version
+template<class itype, class Scope, class K,
+         class rtype = decltype(*std::declval<itype>()) >
+inline void read( lua_State* L, K key, itype it, itype end)
+{
+    int stack_size = lua_to_stack<Scope>(L,key);
+    type_test<Setting>(L,key); // There should be a Lua table on the stack
+    for( int idx=1; it != end; ++idx, ++it){
+        lua_geti(L,-1,idx);
+        type_test<typename std::remove_reference<rtype>::type>(L,idx);
+        *it = stack_to_cpp<typename std::remove_reference<rtype>::type>(L);
+    }
+    lua_pop(L,stack_size);
+}
+
+// ===========================================================================
+// Get length of named object
+
+template<class Scope, class K>
+std::size_t len( lua_State* L, K key){
+    int stack_size = lua_to_stack<Scope>(L,key);
+    lua_len(L,-1);
+    auto size = stack_to_cpp<std::size_t>(L);
+    lua_pop(L,stack_size);
+    return size;
 }
 
 // ============================================================================

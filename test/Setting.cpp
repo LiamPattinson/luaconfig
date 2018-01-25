@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 int main(void){
 
@@ -122,6 +123,18 @@ int main(void){
         std::cout << std::boolalpha << z << std::endl;
 
     }
+
+    // iterables
+    {
+        auto mat = cfg.get<luaconfig::Setting>("matrix");
+        std::vector<double> v( mat.len(1));
+        for( int i=1; i<=mat.len(); ++i){
+            mat.get( i, v.begin(), v.end());
+            for(auto&& x : v) std::cout << x << ' ';
+            std::cout << std::endl;;
+        }
+    }
+
 
     return EXIT_SUCCESS;
 }
